@@ -1,0 +1,28 @@
+#!/usr/bin/ruby
+require 'rexml/document'
+require 'curb'
+
+include REXML
+
+def check_status
+  sub_line_arg = ARGV
+  xml = Curl.get("http://web.mta.info/status/serviceStatus.txt")
+
+  doc = Document.new xml.body_str 
+
+  doc.elements.each('/service/subway/line') do |sub_line|
+    
+    if sub_line.elements['name'].text.include?(sub_line_arg[0].capitalize) 
+
+      if sub_line.elements['status'].text.include?('GOOD SERVICE')
+        puts "OK - GOOD SERVICE"
+        exit 0
+      else
+        puts "CRITICAL - #{sub_line.elements['status'].text}"
+        exit 2
+      end
+    end
+  end
+end
+
+check_status
